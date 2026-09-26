@@ -148,4 +148,4 @@ def test_summary_returns_503_when_queue_is_down(client, world):
 def test_ui_is_served(client):
     r = client.get("/")
     assert r.status_code == 200
-    assert "Service Bookings" in r.text
+    assert "Service Booking" in r.text
