@@ -177,7 +177,7 @@ async function boot() {
   document.getElementById("who").innerHTML =
     `<span class="badge">${me.role}</span> <button class="small" onclick="logout()">Log out</button>`;
   if (me.role === "customer") document.getElementById("create").classList.remove("hidden");
-  if (me.role !== "customer") document.getElementById("summaryBox").classList.remove("hidden");
+  if (me.role === "provider") document.getElementById("summaryBox").classList.remove("hidden");
   await loadBookings();
 }
 
