@@ -36,6 +36,12 @@ The API container runs migrations and seeds demo data on boot, so the first
 Login at `POST /auth/login`, then use the token as a Bearer token (the Swagger
 "Authorize" button works).
 
+## Web UI
+
+A minimal single-page UI ships with the repo - open http://localhost:8000/ after `docker compose up`. It is one static file (`app/static/index.html`, vanilla JS, hand-written CSS, no build step) served by FastAPI at `/`; the Swagger docs stay at `/docs`.
+
+The demo flow: log in as `customer@demo.com` and create a booking, log in as `provider@demo.com` to confirm and complete it, then review it as the customer, and trigger the AI review summary from the provider view (the job runs through the Redis queue and worker, with the page polling for the result).
+
 ## Endpoints
 
 | Method | Path                            | Who                         |
