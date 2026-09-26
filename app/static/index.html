@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bookings</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #0b0d10; color: #e6e8eb;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 40px 20px 80px; }
+  h1 { font-size: 22px; font-weight: 650; letter-spacing: -0.02em; margin: 0; }
+  h2 { font-size: 15px; font-weight: 600; margin: 0 0 12px; color: #9aa3ad;
+       text-transform: uppercase; letter-spacing: 0.06em; }
+  .sub { color: #7d858e; font-size: 14px; margin-top: 4px; }
+  .card {
+    background: #12151a; border: 1px solid #23282f; border-radius: 12px;
+    padding: 20px; margin-top: 20px;
+  }
+  label { display: block; font-size: 13px; color: #9aa3ad; margin: 10px 0 4px; }
+  input, select {
+    width: 100%; padding: 9px 11px; border-radius: 8px; font-size: 14px;
+    background: #0b0d10; color: #e6e8eb; border: 1px solid #2b323a; outline: none;
+  }
+  input:focus, select:focus { border-color: #4f6ef7; }
+  button {
+    padding: 9px 14px; border-radius: 8px; border: 1px solid #2b323a;
+    background: #1a1f26; color: #e6e8eb; font-size: 14px; cursor: pointer;
+  }
+  button:hover { border-color: #3d4650; }
+  button.primary { background: #4f6ef7; border-color: #4f6ef7; color: white; font-weight: 600; }
+  button.primary:hover { background: #4260e8; }
+  button.small { padding: 4px 10px; font-size: 13px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+  .row > div { flex: 1; min-width: 140px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; color: #7d858e; font-weight: 500; font-size: 12.5px;
+       padding: 6px 8px; border-bottom: 1px solid #23282f; }
+  td { padding: 9px 8px; border-bottom: 1px solid #1a1f26; }
+  .badge {
+    display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: 12px;
+    border: 1px solid #2b323a; color: #9aa3ad;
+  }
+  .badge.pending { color: #e2b65a; border-color: #4a3d20; }
+  .badge.confirmed { color: #6ea8fe; border-color: #24406e; }
+  .badge.completed { color: #63c98d; border-color: #1f4632; }
+  .badge.cancelled { color: #e07a7a; border-color: #4e2626; }
+  #msg { margin-top: 14px; font-size: 14px; min-height: 20px; }
+  #msg.err { color: #e07a7a; }
+  #msg.ok { color: #63c98d; }
+  .hidden { display: none; }
+  header.top { display: flex; justify-content: space-between; align-items: center; }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: #7d858e; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Service Bookings</h1>
+      <div class="sub">Providers offer slots. Customers book. Completed bookings get reviewed.</div>
+    </div>
+    <div id="who"></div>
+  </header>
+
+  <div id="auth" class="card">
+    <h2>Sign in</h2>
+    <div class="row">
+      <div><label>Email</label><input id="email" type="email" value="customer@demo.com"></div>
+      <div><label>Password</label><input id="password" type="password" value="demo1234"></div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <div>
+        <label>Role (registration only)</label>
+        <select id="role"><option>customer</option><option>provider</option></select>
+      </div>
+      <div style="display:flex; gap:10px; align-items:end">
+        <button class="primary" onclick="login()">Log in</button>
+        <button onclick="register()">Register</button>
+      </div>
+    </div>
+    <div class="sub" style="margin-top:12px">Demo accounts: admin@ / provider@ / provider2@ / customer@ / customer2@demo.com - password demo1234</div>
+  </div>
+
+  <div id="app" class="hidden">
+    <div id="create" class="card hidden">
+      <h2>New booking</h2>
+      <div class="row">
+        <div><label>Provider user id</label><input id="provider_id" type="number" placeholder="2"></div>
+        <div><label>Start</label><input id="start" type="datetime-local"></div>
+        <div><label>End</label><input id="end" type="datetime-local"></div>
+        <div style="flex:0"><button class="primary" onclick="createBooking()">Book</button></div>
+      </div>
+    </div>
+
+    <div id="summaryBox" class="card hidden">
+      <h2>Review summary</h2>
+      <div class="row">
+        <div class="sub" style="flex:1">Enqueue a summarisation job over your reviews (worker + Redis queue).</div>
+        <div style="flex:0"><button onclick="summarize()">Summarize my reviews</button></div>
+      </div>
+      <div id="summaryOut" class="mono" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <h2>Bookings</h2>
+      <table>
+        <thead><tr><th>ID</th><th>Customer</th><th>Provider</th><th>Start</th><th>Status</th><th></th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="msg"></div>
+</div>
+
+<script>
+// The whole SPA: a fetch wrapper, auth state in localStorage, and small
+// render functions. No framework - every line is explainable in an interview.
+const api = async (path, opts = {}) => {
+  const headers = { "Content-Type": "application/json" };
+  const token = localStorage.getItem("token");
+  if (token) headers["Authorization"] = "Bearer " + token;
+  const res = await fetch(path, { ...opts, headers });
+  if (res.status === 204) return null;
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error((data && data.detail) || ("HTTP " + res.status));
+  return data;
+};
+
+const say = (text, ok = true) => {
+  const el = document.getElementById("msg");
+  el.textContent = text; el.className = ok ? "ok" : "err";
+};
+
+let me = null;
+
+async function login() {
+  try {
+    const t = await api("/auth/login", { method: "POST", body: JSON.stringify({
+      email: email.value, password: password.value }) });
+    localStorage.setItem("token", t.access_token);
+    await boot();
+  } catch (e) { say(e.message, false); }
+}
+
+async function register() {
+  try {
+    await api("/auth/register", { method: "POST", body: JSON.stringify({
+      email: email.value, password: password.value, role: role.value }) });
+    say("Registered. Logging you in...");
+    await login();
+  } catch (e) { say(e.message, false); }
+}
+
+function logout() { localStorage.removeItem("token"); location.reload(); }
+
+async function boot() {
+  // no /me endpoint exists; decode the JWT payload for display only.
+  me = JSON.parse(atob(localStorage.getItem("token").split(".")[1]));
+  document.getElementById("auth").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  document.getElementById("who").innerHTML =
+    `<span class="badge">${me.role}</span> <button class="small" onclick="logout()">Log out</button>`;
+  if (me.role === "customer") document.getElementById("create").classList.remove("hidden");
+  if (me.role !== "customer") document.getElementById("summaryBox").classList.remove("hidden");
+  await loadBookings();
+}
+
+async function loadBookings() {
+  const rows = document.getElementById("rows");
+  rows.innerHTML = "";
+  try {
+    const bookings = await api("/bookings");
+    if (!bookings.length) rows.innerHTML = '<tr><td colspan="6" class="sub">No bookings yet.</td></tr>';
+    for (const b of bookings) rows.appendChild(rowFor(b));
+  } catch (e) { say(e.message, false); }
+}
+
+function rowFor(b) {
+  const tr = document.createElement("tr");
+  const when = new Date(b.start_time).toLocaleString();
+  tr.innerHTML = `<td class="mono">#${b.id}</td><td class="mono">${b.customer_id}</td>
+    <td class="mono">${b.provider_id}</td><td>${when}</td>
+    <td><span class="badge ${b.status}">${b.status}</span></td><td class="actions"></td>`;
+  const actions = tr.querySelector(".actions");
+  const btn = (label, fn) => {
+    const el = document.createElement("button");
+    el.className = "small"; el.textContent = label; el.onclick = fn;
+    actions.appendChild(el);
+  };
+  if (me.role === "provider" && b.status === "pending")
+    btn("Confirm", () => setStatus(b.id, "confirmed"));
+  if (me.role === "provider" && b.status === "confirmed")
+    btn("Complete", () => setStatus(b.id, "completed"));
+  if (me.role === "customer" && (b.status === "pending" || b.status === "confirmed"))
+    btn("Cancel", () => setStatus(b.id, "cancelled"));
+  if (me.role === "customer" && b.status === "completed")
+    btn("Review", () => review(b.id));
+  return tr;
+}
+
+async function setStatus(id, status) {
+  try {
+    await api(`/bookings/${id}`, { method: "PATCH", body: JSON.stringify({ status }) });
+    say(`Booking #${id} is now ${status}.`);
+    await loadBookings();
+  } catch (e) { say(e.message, false); }
+}
+
+async function createBooking() {
+  try {
+    await api("/bookings", { method: "POST", body: JSON.stringify({
+      provider_id: Number(provider_id.value),
+      start_time: start.value, end_time: end.value }) });
+    say("Booking created.");
+    await loadBookings();
+  } catch (e) { say(e.message, false); }
+}
+
+async function review(id) {
+  const rating = prompt("Rating (1-5):", "5");
+  if (rating === null) return;
+  const text = prompt("Review text:", "") || "";
+  try {
+    await api(`/bookings/${id}/review`, { method: "POST",
+      body: JSON.stringify({ rating: Number(rating), text }) });
+    say("Review submitted.");
+  } catch (e) { say(e.message, false); }
+}
+
+async function summarize() {
+  const out = document.getElementById("summaryOut");
+  try {
+    const job = await api("/reviews/summarize", { method: "POST", body: "{}" });
+    out.textContent = `job ${job.job_id.slice(0, 8)}... queued`;
+    // poll the job until the worker writes a result
+    const timer = setInterval(async () => {
+      const j = await api(`/reviews/summarize/${job.job_id}`);
+      out.textContent = `job ${job.job_id.slice(0, 8)}... ${j.status}` +
+        (j.result ? `\n${j.result}` : "");
+      if (j.status === "done" || j.status === "failed") clearInterval(timer);
+    }, 1000);
+  } catch (e) { say(e.message, false); }
+}
+
+if (localStorage.getItem("token")) boot();
+</script>
+</body>
+</html>
