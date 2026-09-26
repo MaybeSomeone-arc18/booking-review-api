@@ -53,6 +53,30 @@ Login at `POST /auth/login`, then use the token as a Bearer token (the Swagger
 | POST   | /reviews/summarize              | provider / admin -> 202     |
 | GET    | /reviews/summarize/{job_id}     | owning provider / admin     |
 
+## Architecture
+
+```text
+                 ┌────────────┐
+                 │   client   │
+                 └─────┬──────┘
+                       ▼
+                ┌─────────────┐        ┌─────────┐
+                │   FastAPI   │───────▶│  Redis  │  bookings cache,
+                │             │        │         │  rate limits,
+                │ JWT + RBAC  │        └────┬────┘  summary job queue
+                │ booking API │             │ BLPOP
+                │ review API  │             ▼
+                └─────┬───────┘        ┌─────────┐
+                      │                │  worker │  (stub summariser)
+                      ▼                └────┬────┘
+                ┌─────────────┐             │
+                │ PostgreSQL  │◀────────────┘
+                │  users      │
+                │  bookings   │
+                │  reviews    │
+                └─────────────┘
+```
+
 ## How access control works
 
 Authentication is a JWT bearer token. Authorization happens in two places:
