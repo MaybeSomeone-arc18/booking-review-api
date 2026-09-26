@@ -1,19 +1,19 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.models import BookingStatus, UserRole
 
 
 class RegisterRequest(BaseModel):
-    email: str
+    email: EmailStr
     password: str = Field(min_length=8)
     # admins are seeded, never self-registered
     role: UserRole = UserRole.customer
 
 
 class LoginRequest(BaseModel):
-    email: str
+    email: EmailStr
     password: str
 
 
