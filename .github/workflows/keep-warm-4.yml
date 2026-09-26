@@ -1,0 +1,20 @@
+name: keep-warm-4
+
+# Independent schedule from keep-warm.yml: GitHub delays cron runs on public
+# repos, so several copies keep the union of pings under Render's 15-min idle
+# sleep window. Each run pings three times a few minutes apart.
+
+on:
+  schedule:
+    - cron: "6-59/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for i in 1 2 3; do
+            curl -fsS https://booking-review-api-sp7f.onrender.com/health
+            sleep 200
+          done
