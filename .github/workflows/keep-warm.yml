@@ -12,4 +12,8 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - run: curl -fsS https://booking-review-api-sp7f.onrender.com/health
+      - run: |
+          for i in 1 2 3; do
+            curl -fsS https://booking-review-api-sp7f.onrender.com/health
+            sleep 200
+          done
