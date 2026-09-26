@@ -66,7 +66,7 @@
   #msg.err { color: #ee8a8a; }
   #msg.ok { color: #72d99e; }
   .hidden { display: none; }
-  header.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  header.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
   .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13.5px; color: #93a0ae; }
 
   /* live status pill */
@@ -123,7 +123,7 @@
       <h1>Service Booking & Review API</h1>
       <div class="sub">Customers book provider slots, providers confirm and complete, completed bookings get reviewed. FastAPI + Postgres + Redis, with a queue worker for review summaries.</div>
     </div>
-    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end">
+    <div style="display:flex; gap:10px; align-items:center; flex:0 0 auto; white-space:nowrap; margin-left:auto">
       <span class="live"><span class="dot"></span><span id="healthText">checking</span></span>
       <span id="who" style="display:inline-flex; gap:8px; align-items:center"></span>
     </div>
