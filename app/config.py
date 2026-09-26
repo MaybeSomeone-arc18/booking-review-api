@@ -13,3 +13,10 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# Hosted Postgres providers (Render, Heroku) hand out postgres:// URLs;
+# SQLAlchemy 2.x wants an explicit driver scheme.
+if settings.DATABASE_URL.startswith("postgres://"):
+    settings.DATABASE_URL = settings.DATABASE_URL.replace(
+        "postgres://", "postgresql+psycopg2://", 1
+    )
