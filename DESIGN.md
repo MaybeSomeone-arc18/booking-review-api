@@ -37,6 +37,9 @@ scoped through it. I would not pretend the current shape survives that.
 
 ## What is missing for production
 
+- Schema changes run through Alembic, applied in CI and on container boot.
+  What is missing is a rollback drill and a zero-downtime story; production
+  would need expand-and-contract migrations instead of edit-in-place.
 - Secrets are env vars in compose. Production needs real secret management
   and rotated JWT keys.
 - Password hashing is stdlib PBKDF2. Fine here; I would move to argon2.
