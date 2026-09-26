@@ -1,3 +1,4 @@
+import redis
 from fastapi import APIRouter, Depends, HTTPException, status
 from redis import Redis
 from sqlalchemy.exc import IntegrityError
@@ -72,7 +73,14 @@ def trigger_summary(
         if provider is None or provider.role != UserRole.provider:
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail="unknown provider")
         provider_id = provider.id
-    job_id = enqueue_summary_job(r, provider_id=provider_id, requested_by=user.id)
+    try:
+        job_id = enqueue_summary_job(r, provider_id=provider_id, requested_by=user.id)
+    except redis.RedisError:
+        # the queue is the one Redis use that cannot fail open - a queue with
+        # no store cannot pretend it accepted the job
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE, detail="job queue unavailable"
+        ) from None
     return JobOut(job_id=job_id, status="queued")
 
 
