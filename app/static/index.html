@@ -138,7 +138,11 @@ const api = async (path, opts = {}) => {
   const res = await fetch(path, { ...opts, headers });
   if (res.status === 204) return null;
   const data = await res.json().catch(() => null);
-  if (!res.ok) throw new Error((data && data.detail) || ("HTTP " + res.status));
+  if (!res.ok) {
+    // FastAPI 422s return detail as a list of {msg} objects; flatten for display
+    const d = data && data.detail;
+    throw new Error(Array.isArray(d) ? d.map(e => e.msg).join("; ") : (d || ("HTTP " + res.status)));
+  }
   return data;
 };
 
