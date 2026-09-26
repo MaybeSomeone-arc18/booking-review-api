@@ -11,9 +11,11 @@
     margin: 0; background: #0b0d10; color: #e6e8eb;
     font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
     line-height: 1.5;
+    background-image: radial-gradient(700px 300px at 50% -120px, rgba(79,110,247,0.18), transparent 70%);
+    background-repeat: no-repeat;
   }
   .wrap { max-width: 860px; margin: 0 auto; padding: 40px 20px 80px; }
-  h1 { font-size: 22px; font-weight: 650; letter-spacing: -0.02em; margin: 0; }
+  h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.03em; margin: 0; }
   h2 { font-size: 15px; font-weight: 600; margin: 0 0 12px; color: #9aa3ad;
        text-transform: uppercase; letter-spacing: 0.06em; }
   .sub { color: #7d858e; font-size: 14px; margin-top: 4px; }
@@ -32,8 +34,11 @@
     background: #1a1f26; color: #e6e8eb; font-size: 14px; cursor: pointer;
   }
   button:hover { border-color: #3d4650; }
-  button.primary { background: #4f6ef7; border-color: #4f6ef7; color: white; font-weight: 600; }
-  button.primary:hover { background: #4260e8; }
+  button.primary {
+    background: linear-gradient(180deg, #5d7bfa, #4462e6); border-color: #4f6ef7;
+    color: white; font-weight: 600;
+  }
+  button.primary:hover { filter: brightness(1.08); }
   button.small { padding: 4px 10px; font-size: 13px; }
   .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
   .row > div { flex: 1; min-width: 140px; }
