@@ -36,6 +36,15 @@ The API container runs migrations and seeds demo data on boot, so the first
 Login at `POST /auth/login`, then use the token as a Bearer token (the Swagger
 "Authorize" button works).
 
+## Live demo
+
+Deployed on Render (free tier): https://booking-review-api-sp7f.onrender.com
+
+- Web UI at `/`, Swagger at `/docs`, health at `/health`
+- Demo accounts below all work on the live instance
+- Managed Postgres + Key Value (Redis) in the same region; migrations and the demo seed run on every deploy (see `start.sh`)
+- Free-tier services sleep after 15 idle minutes, so a keep-warm GitHub Action pings `/health` every 10 minutes; if you do hit a cold start, give the first request ~30s
+
 ## Web UI
 
 A minimal single-page UI ships with the repo - open http://localhost:8000/ after `docker compose up`. It is one static file (`app/static/index.html`, vanilla JS, hand-written CSS, no build step) served by FastAPI at `/`; the Swagger docs stay at `/docs`.
