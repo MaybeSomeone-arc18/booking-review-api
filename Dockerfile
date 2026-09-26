@@ -9,4 +9,4 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["./start.sh"]
+CMD ["sh", "start.sh"]
