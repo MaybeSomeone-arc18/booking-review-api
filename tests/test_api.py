@@ -125,3 +125,21 @@ def test_invalid_status_transition_rejected(client, world):
         f"/bookings/{booking['id']}", json={"status": "completed"}, headers=world["p1h"]
     )
     assert r.status_code == 400
+
+
+def test_summary_returns_503_when_queue_is_down(client, world):
+    import redis as redis_lib
+
+    from app.main import app
+    from app.redis_client import get_redis_dep
+
+    class DeadRedis:
+        def __getattr__(self, name):
+            raise redis_lib.RedisError("down")
+
+    app.dependency_overrides[get_redis_dep] = lambda: DeadRedis()
+    try:
+        r = client.post("/reviews/summarize", json={}, headers=world["p1h"])
+        assert r.status_code == 503
+    finally:
+        app.dependency_overrides.pop(get_redis_dep)
