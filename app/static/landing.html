@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Service Booking & Review API</title>
+<meta name="description" content="A production-shaped booking and review service: FastAPI, PostgreSQL, Redis, and a background worker. Live demo, seeded accounts, full Swagger docs.">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #0a0c10; color: #eef1f5;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 15px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  .glow {
+    position: fixed; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(800px 340px at 50% -140px, rgba(88,116,250,0.20), transparent 70%),
+      radial-gradient(500px 300px at 85% 12%, rgba(114,217,158,0.06), transparent 70%);
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 40px 22px 60px; position: relative; }
+
+  nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .wordmark { font-weight: 700; letter-spacing: -0.02em; font-size: 15.5px; }
+  .wordmark span { color: #5d7bfa; }
+  .navlinks { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  a.nl { color: #a7b1bd; text-decoration: none; font-size: 14px; padding: 7px 12px; border-radius: 9px; transition: all .15s; }
+  a.nl:hover { color: #eef1f5; background: #161c25; }
+  a.nl.solid { background: #1a2029; border: 1px solid #2e3742; color: #e8ecf1; }
+  a.nl.solid:hover { border-color: #455160; background: #202834; }
+
+  .live { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: #72d99e;
+          border: 1px solid #24553a; background: rgba(114,217,158,0.08); border-radius: 99px; padding: 4px 12px; }
+  .live .dot { width: 8px; height: 8px; border-radius: 50%; background: #72d99e; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(114,217,158,0.5); } 50% { box-shadow: 0 0 0 6px rgba(114,217,158,0); } }
+
+  .reveal { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+
+  .hero { padding: 84px 0 56px; }
+  .kicker { font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #7fb4ff; margin-bottom: 16px; }
+  h1 { font-size: clamp(34px, 6vw, 52px); line-height: 1.08; font-weight: 700; letter-spacing: -0.04em; margin: 0 0 18px; }
+  h1 em { font-style: normal; color: #5d7bfa; }
+  .lede { color: #a7b1bd; font-size: 16.5px; max-width: 620px; margin: 0 0 30px; }
+  .ctas { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .btn {
+    display: inline-block; padding: 12px 22px; border-radius: 11px; font-size: 15px; font-weight: 600;
+    text-decoration: none; transition: all .18s; border: 1px solid transparent;
+  }
+  .btn.primary { background: linear-gradient(180deg, #6480fb, #4a68ec); border-color: #5a76f0; color: #fff; }
+  .btn.primary:hover { filter: brightness(1.12); transform: translateY(-1px); }
+  .btn.ghost { border-color: #2e3742; color: #e8ecf1; background: #12161d; }
+  .btn.ghost:hover { border-color: #455160; background: #1a2029; transform: translateY(-1px); }
+  .note { margin-top: 18px; font-size: 13.5px; color: #8b95a3; }
+  .note code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: #b6c0cc; background: #12161d; border: 1px solid #252c36; border-radius: 6px; padding: 2px 7px; }
+
+  section { padding: 44px 0; border-top: 1px solid #161c25; }
+  h2 { font-size: 24px; font-weight: 700; letter-spacing: -0.03em; margin: 0 0 8px; }
+  .shead { color: #a7b1bd; font-size: 15px; margin: 0 0 30px; max-width: 600px; }
+
+  .flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; counter-reset: f; }
+  .flow .step {
+    counter-increment: f; background: #12161d; border: 1px solid #252c36; border-radius: 14px; padding: 20px;
+    transition: border-color .2s, transform .2s;
+  }
+  .flow .step:hover { border-color: #33404e; transform: translateY(-2px); }
+  .flow .step::before {
+    content: counter(f, decimal-leading-zero); display: block; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px; color: #5d7bfa; margin-bottom: 10px;
+  }
+  .flow .step b { display: block; font-size: 15px; margin-bottom: 6px; }
+  .flow .step p { margin: 0; font-size: 13.5px; color: #8b95a3; }
+
+  .arch { display: flex; align-items: stretch; gap: 10px; flex-wrap: wrap; }
+  .arch .node {
+    flex: 1; min-width: 130px; padding: 16px; border-radius: 12px; border: 1px solid #2e3742; background: #12161d;
+    font-size: 13px; color: #8b95a3;
+  }
+  .arch .node b { color: #eef1f5; font-weight: 600; display: block; font-size: 14.5px; margin-bottom: 4px; }
+  .arch .arrow { align-self: center; color: #5d7bfa; font-size: 18px; animation: flow 1.6s infinite; }
+  @keyframes flow { 0%,100% { opacity: .35; } 50% { opacity: 1; } }
+
+  .guards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+  .guard { border: 1px solid #252c36; border-radius: 12px; padding: 16px 18px; font-size: 14px; color: #c3cbd5; background: #12161d; }
+  .guard code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13px; color: #7fb4ff; }
+
+  .cta-band { text-align: center; padding: 64px 0; }
+  .cta-band h2 { font-size: 28px; }
+
+  footer { border-top: 1px solid #161c25; padding: 36px 0 10px; }
+  .byline { font-size: 14.5px; color: #a7b1bd; margin-bottom: 16px; }
+  .byline b { color: #eef1f5; }
+  .socials { display: flex; gap: 8px; flex-wrap: wrap; }
+  .socials a {
+    display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 99px;
+    border: 1px solid #2e3742; color: #b6c0cc; text-decoration: none; font-size: 13.5px; transition: all .15s;
+  }
+  .socials a:hover { border-color: #5d7bfa; color: #eef1f5; transform: translateY(-1px); }
+  .fine { margin-top: 26px; font-size: 13px; color: #5c6673; }
+</style>
+</head>
+<body>
+<div class="glow"></div>
+<div class="wrap">
+  <nav class="reveal">
+    <div class="wordmark">Service Booking <span>&amp;</span> Review API</div>
+    <div class="navlinks">
+      <span class="live"><span class="dot"></span><span id="healthText">checking</span></span>
+      <a class="nl" href="/docs">API docs</a>
+      <a class="nl" href="https://github.com/MaybeSomeone-arc18/booking-review-api">GitHub</a>
+      <a class="nl solid" href="/app">Live demo</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div class="kicker reveal">FastAPI &middot; PostgreSQL &middot; Redis &middot; Docker</div>
+    <h1 class="reveal">Bookings and reviews,<br>with the plumbing <em>actually done</em>.</h1>
+    <p class="lede reveal">A small service with a real spine: providers publish slots, customers book them, completed bookings collect reviews, and a background worker summarises those reviews off a Redis queue. Auth, roles, rate limits, and migrations included - not as bullet points, as running code.</p>
+    <div class="ctas reveal">
+      <a class="btn primary" href="/app">Try the live demo</a>
+      <a class="btn ghost" href="/docs">Swagger docs</a>
+      <a class="btn ghost" href="https://github.com/MaybeSomeone-arc18/booking-review-api">Source on GitHub</a>
+    </div>
+    <div class="note reveal">Seeded demo accounts - <code>customer@demo.com</code> / <code>provider@demo.com</code> / <code>admin@demo.com</code>, password <code>demo1234</code>.</div>
+  </div>
+
+  <section class="reveal">
+    <h2>The lifecycle</h2>
+    <p class="shead">One booking, four states, three roles. Every transition is enforced server-side.</p>
+    <div class="flow">
+      <div class="step"><b>Book</b><p>A customer creates a booking against a provider's slot. Creates are rate-limited in Redis.</p></div>
+      <div class="step"><b>Confirm</b><p>The provider confirms - or the customer cancels while it's still pending.</p></div>
+      <div class="step"><b>Complete</b><p>The provider marks the job done. Only completed bookings can be reviewed.</p></div>
+      <div class="step"><b>Review</b><p>The customer leaves a 1-5 rating and text. One review per booking, enforced by the database.</p></div>
+    </div>
+  </section>
+
+  <section class="reveal">
+    <h2>Under the hood</h2>
+    <p class="shead">A queue worker keeps the request path fast: summaries are jobs, not requests.</p>
+    <div class="arch">
+      <span class="node"><b>Browser</b>vanilla JS SPA, zero build step</span>
+      <span class="arrow">-></span>
+      <span class="node"><b>FastAPI</b>JWT auth, role-based access</span>
+      <span class="arrow">-></span>
+      <span class="node"><b>PostgreSQL</b>users, bookings, reviews</span>
+      <span class="arrow">-></span>
+      <span class="node"><b>Redis</b>cache, rate limits, job queue</span>
+      <span class="arrow">-></span>
+      <span class="node"><b>Worker</b>writes review summaries back</span>
+    </div>
+  </section>
+
+  <section class="reveal">
+    <h2>Built to be audited</h2>
+    <p class="shead">The interesting engineering is in what the API refuses to do.</p>
+    <div class="guards">
+      <div class="guard">Cross-tenant reads return <code>404</code>, not <code>403</code> - no existence leaks between users.</div>
+      <div class="guard">Reviews only attach to <code>completed</code> bookings; anything earlier is rejected.</div>
+      <div class="guard">Duplicate reviews hit a Postgres uniqueness constraint and come back <code>409</code>.</div>
+      <div class="guard">20+ booking creates in a minute trip a Redis rate limiter: <code>429</code>.</div>
+      <div class="guard">Every role sees only its own surface - customer, provider, and admin queries differ by design.</div>
+      <div class="guard">Schema is Alembic-managed; the test suite runs migrations against real Postgres in CI.</div>
+    </div>
+  </section>
+
+  <div class="cta-band reveal">
+    <h2>Take it for a spin.</h2>
+    <p class="shead" style="margin:10px auto 28px">The demo walks you through the full loop - book as a customer, confirm and complete as a provider, review, then watch the worker summarise.</p>
+    <a class="btn primary" href="/app">Open the live demo</a>
+  </div>
+
+  <footer class="reveal">
+    <div class="byline">Designed and built by <b>Sanskar Kharya</b></div>
+    <div class="socials">
+      <a href="https://github.com/MaybeSomeone-arc18">GitHub</a>
+      <a href="https://www.linkedin.com/in/sanskar-kharya-614301310/">LinkedIn</a>
+      <a href="https://x.com/MaybeSansk">X</a>
+      <a href="https://medium.com/@maybesomeone7483">Medium</a>
+      <a href="https://dev.to/sansk_ya">dev.to</a>
+    </div>
+    <div class="fine">Service Booking &amp; Review API - source, tests, and deployment config in the repo.</div>
+  </footer>
+</div>
+
+<script>
+fetch("/health").then(r => {
+  document.getElementById("healthText").textContent = r.ok ? "live" : "degraded";
+}).catch(() => { document.getElementById("healthText").textContent = "unreachable"; });
+
+const io = new IntersectionObserver(entries => {
+  for (const e of entries) if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+}, { threshold: 0.12 });
+document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+</script>
+</body>
+</html>

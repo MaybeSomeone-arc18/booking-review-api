@@ -38,6 +38,11 @@
     transition: background .15s, border-color .15s;
   }
   button:hover { border-color: #455160; background: #202834; }
+  button:active { transform: scale(0.98); }
+  tbody tr { animation: rise .3s ease both; }
+  #app { animation: rise .45s ease both; }
+  a.back { color: #8b95a3; text-decoration: none; font-size: 13.5px; display: inline-block; margin-bottom: 14px; transition: color .15s; }
+  a.back:hover { color: #c3cbd5; }
   button.primary {
     background: linear-gradient(180deg, #6480fb, #4a68ec); border-color: #5a76f0;
     color: white; font-weight: 600;
@@ -118,6 +123,7 @@
 </head>
 <body>
 <div class="wrap">
+  <a class="back" href="/">&larr; Overview</a>
   <header class="top">
     <div>
       <h1>Service Booking & Review API</h1>
