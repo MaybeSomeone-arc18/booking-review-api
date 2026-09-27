@@ -15,6 +15,6 @@ jobs:
     steps:
       - run: |
           for i in 1 2 3; do
-            curl -fsS https://booking-review-api-sp7f.onrender.com/health
+            curl -fsS --retry 6 --retry-all-errors --retry-delay 15 -m 180 https://booking-review-api-sp7f.onrender.com/health
             sleep 200
           done
