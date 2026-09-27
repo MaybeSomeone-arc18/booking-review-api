@@ -145,7 +145,14 @@ def test_summary_returns_503_when_queue_is_down(client, world):
         app.dependency_overrides.pop(get_redis_dep)
 
 
-def test_ui_is_served(client):
+def test_landing_is_served(client):
     r = client.get("/")
     assert r.status_code == 200
     assert "Service Booking" in r.text
+    assert "github.com/MaybeSomeone-arc18" in r.text
+
+
+def test_app_ui_is_served(client):
+    r = client.get("/app")
+    assert r.status_code == 200
+    assert "Try it live" in r.text
