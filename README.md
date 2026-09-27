@@ -8,6 +8,9 @@ booking can be reviewed once.
 
 Built as a take-home assessment. Everything runs with one command.
 
+The written submission note (schema decisions, RBAC approach, production-readiness
+gaps) is in [SUBMISSION.md](SUBMISSION.md).
+
 ## Stack
 
 FastAPI · SQLAlchemy 2 · PostgreSQL · Alembic · Redis · PyJWT · pytest · ruff · Docker Compose
