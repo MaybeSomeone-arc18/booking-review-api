@@ -1,9 +1,7 @@
 name: keep-warm-4
 
-# Independent schedule from keep-warm.yml: GitHub delays cron runs on public
-# repos, so several copies keep the union of pings under Render's 15-min idle
-# sleep window. Each run pings three times a few minutes apart.
-
+# Staggered best-effort pings for the free-tier demo. Render availability is
+# independent of code quality; transient outages must not turn CI red.
 on:
   schedule:
     - cron: "6-59/10 * * * *"
@@ -12,9 +10,16 @@ on:
 jobs:
   ping:
     runs-on: ubuntu-latest
+    timeout-minutes: 14
     steps:
-      - run: |
+      - name: Keep demo awake (best effort)
+        shell: bash
+        run: |
           for i in 1 2 3; do
-            curl -fsS --retry 6 --retry-all-errors --retry-delay 15 -m 180 https://booking-review-api-sp7f.onrender.com/health
-            sleep 200
+            if curl -fsS --retry 2 --retry-all-errors --retry-delay 10 --connect-timeout 10 --max-time 30 https://booking-review-api-sp7f.onrender.com/health; then
+              echo "Health ping $i succeeded"
+            else
+              echo "::warning::Health ping $i failed after retries; Render availability is independent of CI"
+            fi
+            if [ "$i" -lt 3 ]; then sleep 200; fi
           done
