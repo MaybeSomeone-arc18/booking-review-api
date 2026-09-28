@@ -1,8 +1,7 @@
 name: keep-warm
 
-# Render's free tier spins the service down after 15 idle minutes. Ping the
-# health endpoint every 10 minutes so a reviewer never hits a cold start.
-
+# Best-effort pings for a free-tier demo; Render can be unavailable during
+# cold starts or platform incidents. External uptime is not a code test.
 on:
   schedule:
     - cron: "*/10 * * * *"
@@ -11,9 +10,16 @@ on:
 jobs:
   ping:
     runs-on: ubuntu-latest
+    timeout-minutes: 14
     steps:
-      - run: |
+      - name: Keep demo awake (best effort)
+        shell: bash
+        run: |
           for i in 1 2 3; do
-            curl -fsS --retry 6 --retry-all-errors --retry-delay 15 -m 180 https://booking-review-api-sp7f.onrender.com/health
-            sleep 200
+            if curl -fsS --retry 2 --retry-all-errors --retry-delay 10 --connect-timeout 10 --max-time 30 https://booking-review-api-sp7f.onrender.com/health; then
+              echo "Health ping $i succeeded"
+            else
+              echo "::warning::Health ping $i failed after retries; Render availability is independent of CI"
+            fi
+            if [ "$i" -lt 3 ]; then sleep 200; fi
           done
