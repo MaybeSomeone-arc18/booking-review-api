@@ -6,10 +6,10 @@ A small FastAPI service that models the core of a service booking and review
 platform: providers offer time slots, customers book them, and each completed
 booking can be reviewed once.
 
-Built as a take-home assessment. Everything runs with one command.
+Everything runs with one command.
 
-The written submission note (schema decisions, RBAC approach, production-readiness
-gaps) is in [SUBMISSION.md](SUBMISSION.md).
+The schema decisions, RBAC approach and production-readiness gaps are written up
+in [NOTES.md](NOTES.md).
 
 ## Stack
 
