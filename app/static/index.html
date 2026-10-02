@@ -216,7 +216,7 @@
 
 <script>
 // The whole SPA: a fetch wrapper, auth state in localStorage, and small
-// render functions. No framework - every line is explainable in an interview.
+// render functions. No framework - every line is easy to follow.
 const api = async (path, opts = {}) => {
   const headers = { "Content-Type": "application/json" };
   const token = localStorage.getItem("token");
